@@ -1,0 +1,9 @@
+package com.management.csit314_project.DTO;
+
+import com.management.csit314_project.DTO.UserDTO.UserDTO;
+
+public class CustomerAddressDTO {
+    private Integer id;
+    private UserDTO userDTO;
+    private AddressDTO addressDTO;
+}
