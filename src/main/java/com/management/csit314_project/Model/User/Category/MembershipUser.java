@@ -23,7 +23,7 @@ public class MembershipUser implements Serializable {
     @Id
     @OneToOne // One customer can use this function while paying the membership
     // Cannot assigned automatically
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User id;
 
