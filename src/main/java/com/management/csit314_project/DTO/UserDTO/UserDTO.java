@@ -1,6 +1,6 @@
 package com.management.csit314_project.DTO.UserDTO;
 
-import com.management.csit314_server.DTO.AddressDTO;
+import com.management.csit314_project.DTO.AddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
