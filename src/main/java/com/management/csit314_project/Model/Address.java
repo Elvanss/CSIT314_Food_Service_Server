@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Table(name = "Address")
 public class Address implements Serializable {
 
-    @Id
+    @Id // Primary Key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
