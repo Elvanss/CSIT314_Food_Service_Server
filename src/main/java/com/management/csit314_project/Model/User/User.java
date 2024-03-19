@@ -1,6 +1,7 @@
 package com.management.csit314_project.Model.User;
 
 
+import com.management.csit314_project.Model.User.Category.MembershipUser;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
@@ -37,6 +38,15 @@ public class User implements Serializable {
 
     @Column(name = "phone")
     private Long phoneNumber;
+
+    @Column(name = "is_member")
+    private boolean isMember; //To identify this user is non/membership
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "membership_id", referencedColumnName = "memId", unique = true,
+            foreignKey = @ForeignKey(name = "fk_membership_user"))
+    private MembershipUser membership;
+
 
 //    @OneToMany // One customer can have multiple address
 //    @JoinColumn(name = "address-id", referencedColumnName = "id")
