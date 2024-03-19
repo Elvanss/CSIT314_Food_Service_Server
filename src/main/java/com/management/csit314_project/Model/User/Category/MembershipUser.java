@@ -21,11 +21,10 @@ import java.sql.Timestamp;
 public class MembershipUser implements Serializable {
 
     @Id
-    @OneToOne // One customer can use this function while paying the membership
+    // One customer can use this function while paying the membership
     // Cannot assigned automatically
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User id;
+    private Integer memId;
 
     @Column(name = "expiry-time")
     @NotEmpty(message = "This column can not be null!")

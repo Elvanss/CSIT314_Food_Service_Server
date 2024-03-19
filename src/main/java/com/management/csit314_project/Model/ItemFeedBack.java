@@ -15,10 +15,12 @@ import lombok.Setter;
 public class ItemFeedBack {
 
     @Id
-    @OneToOne
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @OneToOne
     @JoinColumn(name = "feedback-id", referencedColumnName = "id")
-    private FeedBack id;
+    private FeedBack feedId;
 
     @OneToOne
     @JoinColumn(name = "item-id", referencedColumnName = "id")
