@@ -1,5 +1,6 @@
 package com.management.csit314_project.DTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class RestaurantDTO implements Serializable {
     private Integer id;
     private String email;
@@ -20,8 +22,8 @@ public class RestaurantDTO implements Serializable {
     private Time closeTime;
     private boolean isOpened;
     private String description;
-    private AddressDTO address; // Assuming you have an AddressDTO class
-    private List<ItemDTO> itemList; // Assuming you have an ItemDTO class
+    private AddressDTO address;
+    private Integer itemList;
 
     // Constructor, getters, and setters
 }

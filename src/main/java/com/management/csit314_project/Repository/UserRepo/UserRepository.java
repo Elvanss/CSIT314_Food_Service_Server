@@ -1,4 +1,4 @@
-package com.management.csit314_project.Repository;
+package com.management.csit314_project.Repository.UserRepo;
 
 import com.management.csit314_project.Model.User.User;
 import org.springframework.data.jpa.repository.JpaRepository;
