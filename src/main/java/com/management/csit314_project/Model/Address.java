@@ -1,6 +1,5 @@
 package com.management.csit314_project.Model;
 
-import com.management.csit314_project.Model.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

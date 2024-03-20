@@ -4,7 +4,10 @@ package com.management.csit314_project.Model.User;
 import com.management.csit314_project.Model.User.Category.MembershipUser;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 // import java.util.List;

@@ -1,6 +1,9 @@
 package com.management.csit314_project.DTO.UserDTO;
 
 import com.management.csit314_project.DTO.AddressDTO;
+import com.management.csit314_project.DTO.UserDTO.CategoryDTO.MembershipUserDTO;
+import com.management.csit314_project.Model.User.Category.MembershipUser;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,10 +20,13 @@ public class UserDTO implements Serializable {
     private Integer id;
     private String firstName;
     private String lastName;
+    @NotEmpty(message = "username is required.")
     private String userName;
+    @NotEmpty(message = "email is required.")
     private String email;
-    private Integer phoneNumber;
-    private List<AddressDTO> addressList;
+    private Long phoneNumber;
+    private boolean isMember;
+    private MembershipUserDTO membershipUserDTO;
 
 
 }

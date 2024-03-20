@@ -55,7 +55,25 @@ public class Restaurant implements Serializable {
 
     @OneToMany
 //            (cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "person")
-//     @JoinColumn(name = "item-id", referencedColumnName = "id")
+    @JoinColumn(name = "item-id", referencedColumnName = "id")
     // Show the list of items belong to restaurant
     private List<Item> itemList;
+
+    public int getNumberOfItems() {
+        return itemList.size();
+    }
+
+    public void addItemToList(Item item) {
+        this.itemList.add(item);
+        item.setRestaurantId(this);
+    }
+
+    public void removeAllItems() {
+        this.itemList.clear();
+    }
+
+    public void removeItem(Item item) {
+        this.itemList.remove(item);
+    }
+
 }
