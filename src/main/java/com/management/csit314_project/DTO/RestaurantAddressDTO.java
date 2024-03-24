@@ -1,17 +1,17 @@
 package com.management.csit314_project.DTO;
 
-import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Setter
 @Getter
-public class CustomerAddressDTO {
+public class RestaurantAddressDTO {
     private Integer id;
-    private UserDTO userDTO;
+    private RestaurantDTO restaurantDTO;
     private AddressDTO addressDTO;
+
 }
