@@ -61,6 +61,7 @@ public class UserService {
         return userMapper.convert(updatedUser);
     }
 
+    //Delete the usre account
     public void deleteUser(String username) {
         Optional<User> userAccount = userRepository.findByUsername(username);
         if (username == null ) {

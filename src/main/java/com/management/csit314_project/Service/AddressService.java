@@ -12,6 +12,8 @@ import com.management.csit314_project.Repository.CustomerAddressRepository;
 import com.management.csit314_project.Repository.RestaurantAddressRepository;
 import com.management.csit314_project.Repository.RestaurantRepository;
 import com.management.csit314_project.Repository.UserRepo.UserRepository;
+import org.hibernate.ObjectNotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -28,8 +30,8 @@ public class AddressService implements Serializable {
     private final CustomerAddressRepository customerAddressRepository;
     private final RestaurantAddressRepository restaurantAddressRepository;
 
-    public AddressService(AddressMapper addressMapper,
-                          AddressRepository addressRepository,
+    public AddressService(@Lazy AddressMapper addressMapper,
+                          @Lazy AddressRepository addressRepository,
                           UserRepository userRepository,
                           RestaurantRepository restaurantRepository,
                           CustomerAddressRepository customerAddressRepository,
@@ -54,11 +56,15 @@ public class AddressService implements Serializable {
         List<Address> addresses = addressRepository.findAll();
         List<AddressDTO> addressDTOs = new ArrayList<>();
         for (Address address : addresses) {
+            if (address == null) {
+                throw new ObjectNotFoundException("The address List is empty!", address);
+            }
             addressDTOs.add(addressMapper.convert(address));
         }
 
         return addressDTOs;
     }
+
 
     public List<CustomerAddressDTO> getAllUserAddresses() {
         List<CustomerAddress> customerAddresses = customerAddressRepository.findAll();
@@ -70,6 +76,7 @@ public class AddressService implements Serializable {
 
         return customerAddressDTOs;
     }
+
 
     public List<RestaurantAddressDTO> getAllRestaurantAddresses() {
         List<RestaurantAddress> restaurantAddresses = restaurantAddressRepository.findAll();

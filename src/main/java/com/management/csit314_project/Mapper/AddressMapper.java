@@ -9,24 +9,26 @@ import com.management.csit314_project.Mapper.UserMapper.UserMapper;
 import com.management.csit314_project.Model.Address;
 import com.management.csit314_project.Model.CustomerAddress;
 import com.management.csit314_project.Model.RestaurantAddress;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
+
 
 @Component
 public class AddressMapper implements Converter<Address, AddressDTO> {
 
     private final UserMapper userMapper;
-    private final AddressMapper addressMapper;
     private final RestaurantMapper restaurantMapper;
 
-    public AddressMapper(UserMapper userMapper, AddressMapper addressMapper, RestaurantMapper restaurantMapper) {
+    public AddressMapper(UserMapper userMapper,
+                         @Lazy RestaurantMapper restaurantMapper) {
         this.userMapper = userMapper;
-        this.addressMapper = addressMapper;
         this.restaurantMapper = restaurantMapper;
     }
 
     public AddressDTO convert(Address address) {
         return mapAddress(address);
+
     }
 
     public CustomerAddressDTO convertCustomerAddress(CustomerAddress customerAddress) {
@@ -52,10 +54,10 @@ public class AddressMapper implements Converter<Address, AddressDTO> {
         }
 
         UserDTO userDTO = userMapper.convert(customerAddress.getUserId());
-        AddressDTO addressDTO = addressMapper.convert(customerAddress.getAddressId());
+        AddressDTO addressDTO = this.convert(customerAddress.getAddressId());
         return new CustomerAddressDTO(customerAddress.getId(),
-                                        userDTO,
-                                        addressDTO);
+                userDTO,
+                addressDTO);
     }
 
     public RestaurantAddressDTO mapRestaurantAddress(RestaurantAddress restaurantAddress) {
@@ -64,10 +66,10 @@ public class AddressMapper implements Converter<Address, AddressDTO> {
         }
 
         RestaurantDTO restaurantDTO = restaurantMapper.convert(restaurantAddress.getRestaurantId());
-        AddressDTO addressDTO = addressMapper.convert(restaurantAddress.getAddressId());
+        AddressDTO addressDTO = this.convert(restaurantAddress.getAddressId());
         return new RestaurantAddressDTO(restaurantAddress.getId(),
-                                        restaurantDTO,
-                                        addressDTO);
+                restaurantDTO,
+                addressDTO);
     }
 
     //    private AddressDTO mapCustomerAddress(CustomerAddress customerAddress) {
