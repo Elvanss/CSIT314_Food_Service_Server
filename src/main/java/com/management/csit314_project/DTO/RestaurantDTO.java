@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class RestaurantDTO implements Serializable {
     private Integer id;
+    private String restaurantName;
     private String email;
     private String phone;
     private String cuisine;

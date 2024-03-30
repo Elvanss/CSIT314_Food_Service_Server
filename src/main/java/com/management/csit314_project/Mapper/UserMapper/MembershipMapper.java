@@ -11,8 +11,15 @@ public class MembershipMapper implements Converter<MembershipUser, MembershipUse
     @Override
     public MembershipUserDTO convert(MembershipUser membershipUser) {
         return new MembershipUserDTO(membershipUser.getMemId(),
-                                        membershipUser.getExpiryDateTime(),
-                                        membershipUser.getMembershipType());
+                membershipUser.getExpiryDateTime(),
+                membershipUser.getMembershipType());
+    }
+
+    public MembershipUser convertToEntity(MembershipUserDTO membershipUserDTO) {
+        MembershipUser membershipUser = new MembershipUser();
+        membershipUser.setMemId(membershipUserDTO.getUserId());
+        membershipUser.setExpiryDateTime(membershipUserDTO.getExpiryDateTime());
+        membershipUser.setMembershipType(membershipUserDTO.getMembershipType());
+        return membershipUser;
     }
 }
-

@@ -2,11 +2,13 @@ package com.management.csit314_project.Mapper.UserMapper;
 
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import com.management.csit314_project.Model.User.User;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Component
-public class UserMapper implements Converter<User, UserDTO> {
+public class UserMapper {
 
     private final MembershipMapper membershipMapper;
 
@@ -14,18 +16,42 @@ public class UserMapper implements Converter<User, UserDTO> {
         this.membershipMapper = membershipMapper;
     }
 
-    //Convert from User to UserDTO
-    @Override
     public UserDTO convert(User user) {
-        return new UserDTO(user.getId(),
-                            user.getFirstName(),
-                            user.getLastName(),
-                            user.getUserName(),
-                            user.getEmail(),
-                            user.getPhoneNumber(),
-                            user.isMember(),
-                            user.getMembership() != null
-                                ? this.membershipMapper.convert(user.getMembership())
-                                : null);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setUserName(user.getUserName());
+        userDTO.setPassword(user.getPassword());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setPhoneNumber(user.getPhoneNumber());
+        userDTO.setMember(user.isMember());
+
+        // Map MembershipUser
+        if (user.getMembership() != null) {
+            userDTO.setMembershipUserDTO(membershipMapper.convert(user.getMembership()));
+        }
+
+        return userDTO;
     }
+
+    public User convertToEntity(UserDTO userDTO) {
+        User user = new User();
+        user.setId(userDTO.getId());
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setUserName(userDTO.getUserName());
+        user.setEmail(userDTO.getEmail());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setMember(userDTO.isMember());
+
+        // Map MembershipUser
+        if (userDTO.getMembershipUserDTO() != null) {
+            user.setMembership(membershipMapper.convertToEntity(userDTO.getMembershipUserDTO()));
+        }
+
+        return user;
+    }
+
+
 }

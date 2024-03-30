@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Set;
 // import java.util.List;
 
 @Entity
@@ -35,6 +36,9 @@ public class User implements Serializable {
     @Column(name = "username")
     private String userName;
 
+    @Column(name = "password")
+    private String password;
+
     @Column(name = "email")
     @NotEmpty(message = "This area can not be null!")
     private String email;
@@ -45,13 +49,18 @@ public class User implements Serializable {
     @Column(name = "is_member")
     private boolean isMember; //To identify this user is non/membership
 
+    @OneToMany(mappedBy = "user")
+    @Column(name = "role")
+//    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<UserRoles> roleUsers;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "membership_id", referencedColumnName = "memId", unique = true,
             foreignKey = @ForeignKey(name = "fk_membership_user"))
     private MembershipUser membership;
 
 
-//    @OneToMany // One customer can have multiple address
+    //    @OneToMany // One customer can have multiple address
 //    @JoinColumn(name = "address-id", referencedColumnName = "id")
 //    private List<CustomerAddress> addressList;
 //

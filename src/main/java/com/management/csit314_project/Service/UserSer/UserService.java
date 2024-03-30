@@ -1,40 +1,157 @@
 package com.management.csit314_project.Service.UserSer;
 
+import com.management.csit314_project.DTO.LoginDTO;
+import com.management.csit314_project.DTO.LoginResponseDTO;
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import com.management.csit314_project.Mapper.UserMapper.UserMapper;
+import com.management.csit314_project.Model.User.Role;
 import com.management.csit314_project.Model.User.User;
+import com.management.csit314_project.Model.User.UserRoles;
 import com.management.csit314_project.Repository.CartRepository;
+import com.management.csit314_project.Repository.RoleRepository;
 import com.management.csit314_project.Repository.UserRepo.MembershipRepository;
 import com.management.csit314_project.Repository.UserRepo.UserRepository;
+import com.management.csit314_project.Repository.UserRoleRepository;
+import com.management.csit314_project.Security.CustomUserDetails;
+import com.management.csit314_project.Security.JwtGenerated;
+import com.management.csit314_project.Security.JwtTokenProvider;
+import com.management.csit314_project.System.Exception.AppException;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserService {
 
-    private final MembershipRepository membershipUser;
+    private final MembershipRepository membershipRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserRoleRepository userRolesRepository;
     private final CartRepository cartRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
-    public UserService(MembershipRepository membershipUser,
+    public UserService(MembershipRepository membershipRepository,
                        UserRepository userRepository,
                        UserMapper userMapper,
-                       CartRepository cartRepository) {
-        //Assigned
-        this.membershipUser = membershipUser;
-        this.userMapper = userMapper;
-        this.cartRepository = cartRepository;
+                       UserRoleRepository userRolesRepository,
+                       CartRepository cartRepository,
+                       PasswordEncoder passwordEncoder,
+                       RoleRepository roleRepository,
+                       JwtTokenProvider jwtTokenProvider,
+                       AuthenticationManager authenticationManager) {
+
+        this.membershipRepository = membershipRepository;
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.userRolesRepository = userRolesRepository;
+        this.cartRepository = cartRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.authenticationManager = authenticationManager;
     }
 
-    // Show the userInfo by username
+    @Transactional
+    public UserDTO register(UserDTO newUser) {
+
+        if (userRepository.existsByUsername(newUser.getUserName())) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Username is already taken!");
+        }
+
+        // add check for email exists in DB
+        if (userRepository.existsByEmail(newUser.getEmail())) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Email is already taken!");
+        }
+        User user = new User();
+        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        user.setUserName(newUser.getUserName());
+        user.setFirstName(newUser.getFirstName());
+        user.setLastName(newUser.getLastName());
+        user.setEmail(newUser.getEmail());
+        User savedUser = userRepository.save(user);
+
+
+        // Assign the "USER" role
+        Role roleEntity = roleRepository.findByName(com.management.csit314_project.Model.Type.Roles.USER.name()).orElseThrow();
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Role not found!"));
+        //user.setRoles(Collections.singleton(userRole.getName()));
+        //user.setRoles(Set.of(String.valueOf(roleEntity)));
+//        UserRoles roleUser = new UserRoles();
+//        roleUser.setUserId(savedUser.getId());
+//        roleUser.setRoleId(roleEntity.getId());
+//        roleUserRepository.save(roleUser);
+//
+//        Cart cart = new Cart();
+//        cart.setUserId(savedUser.getId());
+//        LocalDate localDate = LocalDate.now();
+//        cart.setCreatedDate(Date.valueOf(localDate));
+//        cartRepository.save(cart);
+//        // Save the user to the database
+//        return userMapper.userToUserDto(savedUser);
+        return null;
+    }
+
+    @Transactional
+    public LoginResponseDTO login(LoginDTO loginDTO) {
+        try {
+            // Perform authentication
+            log.info("Before login");
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDTO.getUsernameOrEmail(), loginDTO.getPassword()));
+            log.info("Login with username: " + loginDTO.getUsernameOrEmail() + " and password: " + loginDTO.getPassword());
+            // Retrieve user details from the authenticated token
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+            // Generate JWT token
+            JwtGenerated jwtGenerated = jwtTokenProvider.generatedToken(userDetails);
+
+//            Long userId = userDetails.getUser().getId();
+//            //get Cart Id by userId
+//            Long cartId = getCartByUserId(userId).getId();
+//            int quantity = getQuantityByUserId(userId);
+
+            //get role by user id
+            List<String> roles = getRoleListByUserId(userDetails.getUser().getId());
+
+            // Build the response DTO
+            return LoginResponseDTO.builder()
+                    .accessToken(jwtGenerated.getAccessToken())
+                    .expiredIn(jwtGenerated.getExpiredIn())
+                    .roles(userDetails.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(Collectors.toList()))
+//                    .cartId(cartId)
+//                    .userId(userId)
+//                    .quantity(quantity)
+                    .roles(roles)
+                    .build();
+        } catch (Exception e) {
+            // Handle authentication failure
+            log.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    // User Account
     public UserDTO getUserInfo(String username) {
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
-            //get all variables from userDTO
             User user = userOptional.get();
             return userMapper.convert(user);
         } else {
@@ -42,10 +159,9 @@ public class UserService {
         }
     }
 
-    // Update User Profile
     public UserDTO updateUserProfile(String username, UserDTO updateFields) {
         User existingUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User is not found! "));
+                .orElseThrow(() -> new UsernameNotFoundException("User is not found!"));
 
         if (updateFields.getEmail() != null) {
             existingUser.setEmail(updateFields.getEmail());
@@ -55,22 +171,52 @@ public class UserService {
             existingUser.setFirstName(updateFields.getFirstName());
             existingUser.setLastName(updateFields.getLastName());
         }
-        //Save the current user to repo
+
         User updatedUser = userRepository.save(existingUser);
 
         return userMapper.convert(updatedUser);
     }
 
-    //Delete the usre account
     public void deleteUser(String username) {
         Optional<User> userAccount = userRepository.findByUsername(username);
-        if (username == null ) {
-            throw new RuntimeException("User not found with id: " + userAccount);
+        if (userAccount.isPresent()) {
+            userRepository.delete(userAccount.get());
+        } else {
+            throw new UsernameNotFoundException("User not found with username: " + username);
         }
-        userRepository.delete(userAccount.get());
     }
 
+    // Admin Functions
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(userMapper::convert)
+                .collect(Collectors.toList());
+    }
 
+    public UserDTO addUser(UserDTO userDTO) {
+        User user = userMapper.convertToEntity(userDTO);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
+        return userMapper.convert(savedUser);
+    }
 
+    // Other functions
+    private List<String> getRoleListByUserId(Integer userId) {
+        List<UserRoles> listRoleUser = userRolesRepository.findByUserId(userId);
+        List<String> list = listRoleUser
+                .stream()
+                .map(roleUser -> getRoleById(roleUser.getId())).collect(Collectors.toList());
+        return list;
+    }
+
+    private String getRoleById(Integer roleId) {
+        Optional<Role> role = roleRepository.findById(roleId);
+        if (role.isEmpty()) {
+            throw new AppException(HttpStatus.NOT_FOUND.value(),
+                    "Role with id " + roleId + " does not exist");
+        }
+
+        return role.get().getName();
+    }
 }
-

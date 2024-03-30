@@ -31,4 +31,15 @@ public class ItemMapper implements Converter<Item, ItemDTO> {
                         : null
         );
     }
+
+    public Item convertToEntity(ItemDTO itemDTO) {
+        return new Item(
+                itemDTO.getId(),
+                itemDTO.getItemName(),
+                itemDTO.getDescription(),
+                itemDTO.isAvailable(),
+                itemDTO.getPrice(),
+                itemDTO.getItemCategory()
+        );
+    }
 }

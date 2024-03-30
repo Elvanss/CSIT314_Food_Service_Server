@@ -1,10 +1,7 @@
 package com.management.csit314_project.DTO;
 
 import com.management.csit314_project.Model.Type.ItemCategory;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 

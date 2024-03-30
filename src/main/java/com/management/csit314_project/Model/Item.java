@@ -40,5 +40,18 @@ public class Item {
     private Restaurant restaurantId;
 
 
+    public Item(Integer id,
+                String itemName,
+                String description,
+                boolean available,
+                Long price,
+                ItemCategory itemCategory) {
 
+        this.id = id;
+        this.itemName = itemName;
+        this.description = description;
+        this.isAvailable = available;
+        this.price = price;
+        this.itemCategory = itemCategory;
+    }
 }
