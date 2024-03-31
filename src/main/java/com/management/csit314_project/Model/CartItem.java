@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Date;
+import java.sql.Time;
+
 @Entity
 @Getter
 @Setter
@@ -16,11 +19,15 @@ public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id")
     private Item item;
 
+    @Column(name = "quantity")
     private Integer quantity;
+
+    @Column(name = "dateTime")
+    private Date dateTime;
 }

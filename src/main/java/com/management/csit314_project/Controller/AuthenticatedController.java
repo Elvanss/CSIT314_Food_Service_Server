@@ -1,6 +1,7 @@
 package com.management.csit314_project.Controller;
 
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
+import com.management.csit314_project.Model.Type.MembershipType;
 import com.management.csit314_project.Service.RestaurantService;
 import com.management.csit314_project.Service.UserSer.UserService;
 import com.management.csit314_project.System.Response.Result;
@@ -8,9 +9,7 @@ import com.management.csit314_project.System.Response.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/services/authenticated")
@@ -54,6 +53,13 @@ public class AuthenticatedController {
         userDTO = userService.updateUserProfile(usernameFilter, updatedField);
         return new Result(true, StatusCode.SUCCESS, "Update User Profile Successfully", userDTO);
     }
+
+    // Sign up for membership
+    @PostMapping("/user/{userId}/membership")
+    public Result signUpForMembership(@PathVariable int userId, @RequestBody MembershipType membershipType) {
+        userService.signUpForMembership(userId, membershipType);
+        return new Result(true, StatusCode.SUCCESS, "Membership signed up successfully", userId);
+}
 
     /*
      * Area: Restaurant Profile with API Services

@@ -15,6 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDTO {
     private Integer id;
-    private List<CartItem> cartItems = new ArrayList<>();
+    private List<CartItemResDTO> cartItems = new ArrayList<>();
     private Long totalPrice;
 }

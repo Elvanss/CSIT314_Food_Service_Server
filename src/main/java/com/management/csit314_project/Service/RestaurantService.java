@@ -1,10 +1,12 @@
 package com.management.csit314_project.Service;
 
 import com.management.csit314_project.DTO.RestaurantDTO;
+import com.management.csit314_project.Exception.ObjNotFoundException;
 import com.management.csit314_project.Mapper.RestaurantMapper;
 import com.management.csit314_project.Model.Restaurant;
 import com.management.csit314_project.Repository.RestaurantRepository;
 import org.hibernate.ObjectNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,11 +17,27 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper restaurantMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public RestaurantService(RestaurantRepository restaurantRepository, RestaurantMapper restaurantMapper) {
+    public RestaurantService(RestaurantRepository restaurantRepository,
+                             RestaurantMapper restaurantMapper,
+                             PasswordEncoder passwordEncoder) {
         this.restaurantRepository = restaurantRepository;
         this.restaurantMapper = restaurantMapper;
+        this.passwordEncoder = passwordEncoder;
     }
+
+    //login by restaurant
+    public RestaurantDTO loginRestaurant(String email, String password) {
+        Restaurant restaurant = restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new ObjNotFoundException(email, "Restaurant not found"));
+        if (restaurant.getPassword().equals(password)) {
+            return restaurantMapper.convert(restaurant);
+        } else {
+            throw new ObjNotFoundException(email, "Password is incorrect");
+        }
+    }
+
 
     // Get all restaurants
     public List<RestaurantDTO> getAllRestaurants() {

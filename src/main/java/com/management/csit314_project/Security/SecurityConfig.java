@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,7 +25,6 @@ public class SecurityConfig {
 
     private static final String[] WHITE_LIST = {
             "/api/services/authenticated/**",
-
 
 
     };
@@ -48,11 +49,12 @@ public class SecurityConfig {
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
-
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
-        return authConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -66,24 +68,43 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf(AbstractHttpConfigurer::disable);
-//        http.cors(AbstractHttpConfigurer::disable);
-        http.authorizeHttpRequests(authz ->
-                        authz
-                                .requestMatchers(WHITE_LIST).permitAll()
-                                .requestMatchers("/api/services/admin/**").hasAuthority(Roles.USER.name())
-                                .requestMatchers("/api/services/authenticated/**").hasAnyAuthority(Roles.ADMIN.name(),Roles.USER.name())
-                                .requestMatchers(Restaurant_URL).hasAuthority(Roles.RESTAURANT.name())
-                                .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(handler -> handler.accessDeniedHandler(accessDeniedHandler));
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+//                                .requestMatchers(WHITE_LIST).permitAll()
+//                                .requestMatchers("/api/services/admin/**").hasAuthority(Roles.USER.name())
+//                                .requestMatchers("/api/services/authenticated/**").hasAnyAuthority(Roles.ADMIN.name(),Roles.USER.name())
+//                                .requestMatchers(Restaurant_URL).hasAuthority(Roles.RESTAURANT.name())
+//                                .anyRequest().authenticated()
+//
+//                )
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(authenticationProvider)
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .cors(Customizer.withDefaults())
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling(handler -> handler.accessDeniedHandler(accessDeniedHandler));
+//
+//        return http.build();
+//    }
 
-        return http.build();
-    }
+    @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+            .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                    .requestMatchers(WHITE_LIST).permitAll()
+                    .requestMatchers("/api/services/admin/**").hasAuthority(Roles.USER.name())
+                    .requestMatchers("/api/services/authenticated/**").hasAnyAuthority(Roles.ADMIN.name(),Roles.USER.name())
+                    .requestMatchers(Restaurant_URL).hasAuthority(Roles.RESTAURANT.name())
+                    .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider)
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
+            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(handler -> handler.accessDeniedHandler(accessDeniedHandler))
+            .build();
+}
 
 }

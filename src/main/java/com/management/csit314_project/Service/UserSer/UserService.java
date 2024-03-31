@@ -4,6 +4,8 @@ import com.management.csit314_project.DTO.LoginDTO;
 import com.management.csit314_project.DTO.LoginResponseDTO;
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import com.management.csit314_project.Mapper.UserMapper.UserMapper;
+import com.management.csit314_project.Model.Type.MembershipType;
+import com.management.csit314_project.Model.User.Category.MembershipUser;
 import com.management.csit314_project.Model.User.Role;
 import com.management.csit314_project.Model.User.User;
 import com.management.csit314_project.Model.User.UserRoles;
@@ -19,6 +21,7 @@ import com.management.csit314_project.System.Exception.AppException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,6 +30,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -121,9 +126,9 @@ public class UserService {
             // Generate JWT token
             JwtGenerated jwtGenerated = jwtTokenProvider.generatedToken(userDetails);
 
-//            Long userId = userDetails.getUser().getId();
-//            //get Cart Id by userId
-//            Long cartId = getCartByUserId(userId).getId();
+            Integer userId = userDetails.getUser().getId();
+            //get Cart Id by userId
+//            Integer cartId = getCartByUserId(userId).getId();
 //            int quantity = getQuantityByUserId(userId);
 
             //get role by user id
@@ -213,10 +218,51 @@ public class UserService {
     private String getRoleById(Integer roleId) {
         Optional<Role> role = roleRepository.findById(roleId);
         if (role.isEmpty()) {
-            throw new AppException(HttpStatus.NOT_FOUND.value(),
-                    "Role with id " + roleId + " does not exist");
+            throw new AppException(HttpStatus.NOT_FOUND.value(), "Role with id " + roleId + " does not exist");
         }
 
         return role.get().getName();
+    }
+
+    @Transactional
+    public void signUpForMembership(int userId, MembershipType membershipType) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+
+        MembershipUser membership = new MembershipUser();
+        membership.setMemId(userId);
+        membership.setMembershipType(membershipType);
+        Timestamp expiryDateTime = calculateExpiryDate(membershipType);
+        membership.setExpiryDateTime(expiryDateTime);
+
+        user.setMembership(membership);
+        userRepository.save(user);
+    }
+
+    // Calculate the expiry date based on the membership type
+    private Timestamp calculateExpiryDate(MembershipType membershipType) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiryDateTime = switch (membershipType) {
+            case MONTHLY -> now.plusMonths(1);
+            case ANNUALLY -> now.plusYears(1);
+            default -> throw new IllegalArgumentException("Invalid membership type: " + membershipType);
+        };
+
+        return Timestamp.valueOf(expiryDateTime);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void removeExpiredMemberships() {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            MembershipUser membership = user.getMembership();
+            if (membership != null && membership
+                                        .getExpiryDateTime()
+                                        .before(new Timestamp(System.currentTimeMillis()))) {
+
+                user.setMembership(null);
+                userRepository.save(user);
+            }
+        }
     }
 }

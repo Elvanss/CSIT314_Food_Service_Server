@@ -31,6 +31,10 @@ public class Restaurant implements Serializable {
     @NotEmpty(message = "This field can not be null")
     private String email;
 
+    @Column(name = "password") // Represent the restaurant password
+    @NotEmpty(message = "This field can not be null")
+    private String password;
+
     @Column(name = "phone")
     private String phone;
 
