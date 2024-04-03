@@ -1,5 +1,6 @@
 package com.management.csit314_project.Model;
 
+import com.management.csit314_project.Model.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,4 +28,8 @@ public class Cart {
 
     @Column(name = "Total_Price")
     private Long totalPrice;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 }

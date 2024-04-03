@@ -7,7 +7,6 @@ import com.management.csit314_project.Service.AddressService;
 import com.management.csit314_project.System.Response.Result;
 import com.management.csit314_project.System.Response.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -4,6 +4,7 @@ import com.management.csit314_project.DTO.LoginDTO;
 import com.management.csit314_project.DTO.LoginResponseDTO;
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import com.management.csit314_project.Mapper.UserMapper.UserMapper;
+import com.management.csit314_project.Model.Cart;
 import com.management.csit314_project.Model.Type.MembershipType;
 import com.management.csit314_project.Model.User.Category.MembershipUser;
 import com.management.csit314_project.Model.User.Role;
@@ -18,6 +19,7 @@ import com.management.csit314_project.Security.CustomUserDetails;
 import com.management.csit314_project.Security.JwtGenerated;
 import com.management.csit314_project.Security.JwtTokenProvider;
 import com.management.csit314_project.System.Exception.AppException;
+import jakarta.persistence.metamodel.IdentifiableType;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -95,7 +98,7 @@ public class UserService {
         Role roleEntity = roleRepository.findByName(com.management.csit314_project.Model.Type.Roles.USER.name()).orElseThrow();
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Role not found!"));
-        //user.setRoles(Collections.singleton(userRole.getName()));
+//        user.setRoleUsers(Collections.singleton(userRole.getName()));
         //user.setRoles(Set.of(String.valueOf(roleEntity)));
 //        UserRoles roleUser = new UserRoles();
 //        roleUser.setUserId(savedUser.getId());
@@ -118,14 +121,18 @@ public class UserService {
             // Perform authentication
             log.info("Before login");
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDTO.getUsernameOrEmail(), loginDTO.getPassword()));
+                    new UsernamePasswordAuthenticationToken(loginDTO.getUsernameOrEmail(),
+                                                            loginDTO.getPassword()));
+            log.info("After login");
             log.info("Login with username: " + loginDTO.getUsernameOrEmail() + " and password: " + loginDTO.getPassword());
+
             // Retrieve user details from the authenticated token
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
             // Generate JWT token
             JwtGenerated jwtGenerated = jwtTokenProvider.generatedToken(userDetails);
 
+            // Get user id
             Integer userId = userDetails.getUser().getId();
             //get Cart Id by userId
 //            Integer cartId = getCartByUserId(userId).getId();
@@ -142,13 +149,22 @@ public class UserService {
                             .map(GrantedAuthority::getAuthority)
                             .collect(Collectors.toList()))
 //                    .cartId(cartId)
-//                    .userId(userId)
+                    .userId(userId) // user id is the same as the cart id
 //                    .quantity(quantity)
                     .roles(roles)
                     .build();
         } catch (Exception e) {
             // Handle authentication failure
             log.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    // Get the cart by user id (user id is the same as the cart id)
+    private Cart getCartByUserId(Long userId) {
+        Optional<Cart> foundCart = cartRepository.findByUserId(userId);
+        if (foundCart.isEmpty()) {
+            throw new AppException(HttpStatus.NOT_FOUND.value(), "Cart not found for user with id: " + userId);
         }
         return null;
     }
@@ -182,6 +198,8 @@ public class UserService {
         return userMapper.convert(updatedUser);
     }
 
+
+    // Delete the user account
     public void deleteUser(String username) {
         Optional<User> userAccount = userRepository.findByUsername(username);
         if (userAccount.isPresent()) {
@@ -265,4 +283,21 @@ public class UserService {
             }
         }
     }
+
+//    public void updateMembership(int userId, MembershipType membershipType) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+//
+//        MembershipUser membership = user.getMembership();
+//        if (membership == null) {
+//            throw new AppException(HttpStatus.BAD_REQUEST.value(), "User does not have a membership");
+//        }
+//
+//        membership.setMembershipType(membershipType);
+//        Timestamp expiryDateTime = calculateExpiryDate(membershipType);
+//        membership.setExpiryDateTime(expiryDateTime);
+//
+//        user.setMembership(membership);
+//        userRepository.save(user);
+//    }
 }

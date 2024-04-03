@@ -14,7 +14,7 @@ public class LoginResponseDTO {
     private String accessToken;
     private Date expiredIn;
     private List<String> roles;
-    private Long cartId;
-    private Long userId;
+    private Integer cartId;
+    private Integer userId;
     private int quantity;
 }
