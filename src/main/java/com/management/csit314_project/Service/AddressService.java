@@ -49,9 +49,10 @@ public class AddressService implements Serializable {
      * Mutual Address Service (CRUD) In Order:
      * - Check All Generic Address
      * - Manage User Address
-     * - Manage Address Address
+     * - Manage Restaurant Address
      * */
 
+    /* Check All Generic Address */
     public List<AddressDTO> getAllAddresses() { //Both User and Restaurant (ADMIN side)
         List<Address> addresses = addressRepository.findAll();
         List<AddressDTO> addressDTOs = new ArrayList<>();
@@ -88,4 +89,93 @@ public class AddressService implements Serializable {
 
         return restaurantAddressDTOs;
     }
+
+    /* Manage User Address */
+    // Add User Address
+    public CustomerAddressDTO addUserAddress(CustomerAddressDTO customerAddressDTO) {
+        CustomerAddress customerAddress = addressMapper.convertCustomerAddressToEntity(customerAddressDTO);
+        customerAddressRepository.save(customerAddress);
+        return addressMapper.convertCustomerAddress(customerAddress);
+    }
+
+    // Update User Address
+    public CustomerAddressDTO updateUserAddress(CustomerAddressDTO customerAddressDTO) {
+        CustomerAddress customerAddress = addressMapper.convertCustomerAddressToEntity(customerAddressDTO);
+        customerAddressRepository.save(customerAddress);
+        return addressMapper.convertCustomerAddress(customerAddress);
+    }
+
+    // Delete User Address
+    public CustomerAddressDTO deleteUserAddress(Integer id) {
+        CustomerAddress customerAddress = customerAddressRepository.findById(id).orElse(null);
+        if (customerAddress == null) {
+            throw new ObjectNotFoundException("The user address is not found!", customerAddress);
+        }
+        customerAddressRepository.delete(customerAddress);
+        return addressMapper.convertCustomerAddress(customerAddress);
+    }
+
+    // Get User Address
+    public CustomerAddressDTO getUserAddress(Integer id) {
+        CustomerAddress customerAddress = customerAddressRepository.findById(id).orElse(null);
+        if (customerAddress == null) {
+            throw new ObjectNotFoundException("The user address is not found!", customerAddress);
+        }
+        return addressMapper.convertCustomerAddress(customerAddress);
+    }
+
+    // Get User Address by User Id
+    public CustomerAddressDTO getUserAddressByUserId(Integer userId) {
+        CustomerAddress customerAddress = customerAddressRepository.findByUserId(userId).orElse(null);
+        if (customerAddress == null) {
+            throw new ObjectNotFoundException("The user address is not found!", customerAddress);
+        }
+        return addressMapper.convertCustomerAddress(customerAddress);
+    }
+
+
+    /* Manage Restaurant Address */
+
+    // Add Restaurant Address
+    public RestaurantAddressDTO addRestaurantAddress(RestaurantAddressDTO restaurantAddressDTO) {
+        RestaurantAddress restaurantAddress = addressMapper.convertRestaurantAddressToEntity(restaurantAddressDTO);
+        restaurantAddressRepository.save(restaurantAddress);
+        return addressMapper.convertRestaurantAddress(restaurantAddress);
+    }
+
+    // Update Restaurant Address
+    public RestaurantAddressDTO updateRestaurantAddress(RestaurantAddressDTO restaurantAddressDTO) {
+        RestaurantAddress restaurantAddress = addressMapper.convertRestaurantAddressToEntity(restaurantAddressDTO);
+        restaurantAddressRepository.save(restaurantAddress);
+        return addressMapper.convertRestaurantAddress(restaurantAddress);
+    }
+
+    // Delete Restaurant Address
+    public RestaurantAddressDTO deleteRestaurantAddress(Integer id) {
+        RestaurantAddress restaurantAddress = restaurantAddressRepository.findById(id).orElse(null);
+        if (restaurantAddress == null) {
+            throw new ObjectNotFoundException("The restaurant address is not found!", restaurantAddress);
+        }
+        restaurantAddressRepository.delete(restaurantAddress);
+        return addressMapper.convertRestaurantAddress(restaurantAddress);
+    }
+
+    // Get Restaurant Address by Address Id
+    public RestaurantAddressDTO getRestaurantAddress(Integer id) {
+        RestaurantAddress restaurantAddress = restaurantAddressRepository.findById(id).orElse(null);
+        if (restaurantAddress == null) {
+            throw new ObjectNotFoundException("The restaurant address is not found!", restaurantAddress);
+        }
+        return addressMapper.convertRestaurantAddress(restaurantAddress);
+    }
+
+    // Get Restaurant Address by Restaurant Id
+    public RestaurantAddressDTO getRestaurantAddressByRestaurantId(Integer restaurantId) {
+        RestaurantAddress restaurantAddress = restaurantAddressRepository.findByRestaurantId(restaurantId).orElse(null);
+        if (restaurantAddress == null) {
+            throw new ObjectNotFoundException("The restaurant address is not found!", restaurantAddress);
+        }
+        return addressMapper.convertRestaurantAddress(restaurantAddress);
+    }
+
 }

@@ -30,7 +30,6 @@ public class AddressMapper implements Converter<Address, AddressDTO> {
         return mapAddress(address);
 
     }
-
     public CustomerAddressDTO convertCustomerAddress(CustomerAddress customerAddress) {
         return mapCustomerAddress(customerAddress);
     }
@@ -39,6 +38,10 @@ public class AddressMapper implements Converter<Address, AddressDTO> {
         return mapRestaurantAddress(restaurantAddress);
     }
 
+
+    /*
+     * Convert Address to AddressDTO
+     * */
     private AddressDTO mapAddress(Address address) {
         return new AddressDTO(address.getId(),
                 address.getBname(),
@@ -72,11 +75,37 @@ public class AddressMapper implements Converter<Address, AddressDTO> {
                 addressDTO);
     }
 
-    //    private AddressDTO mapCustomerAddress(CustomerAddress customerAddress) {
-//        return new AddressDTO(customerAddress.getId(),
-//                customerAddress.getUserId() != null
-//                        ? userMapper.convert(customerAddress.getUserId())
-//                        : null,
-//                mapAddress(customerAddress));
-//    }
+    /* Convert to Entity */
+
+    // Convert AddressDTO to Address Entity
+    public Address convertAddressToEntity(AddressDTO addressDTO) {
+        Address address = new Address();
+        address.setId(addressDTO.getId());
+        address.setBname(addressDTO.getBname());
+        address.setStreet(addressDTO.getStreet());
+        address.setSuburb(addressDTO.getSuburb());
+        address.setState(addressDTO.getState());
+        address.setPostCode(addressDTO.getPostCode());
+        return address;
+    }
+
+    // Convert CustomerAddressDTO to CustomerAddress Entity
+    public CustomerAddress convertCustomerAddressToEntity(CustomerAddressDTO customerAddressDTO) {
+        CustomerAddress customerAddress = new CustomerAddress();
+        customerAddress.setId(customerAddressDTO.getId());
+        customerAddress.setUserId(userMapper.convertToEntity(customerAddressDTO.getUserDTO()));
+        customerAddress.setAddressId(convertAddressToEntity(customerAddressDTO.getAddressDTO()));
+        return customerAddress;
+    }
+
+    // Convert RestaurantAddressDTO to RestaurantAddress Entity
+    public RestaurantAddress convertRestaurantAddressToEntity(RestaurantAddressDTO restaurantAddressDTO) {
+        RestaurantAddress restaurantAddress = new RestaurantAddress();
+        restaurantAddress.setId(restaurantAddressDTO.getId());
+        restaurantAddress.setRestaurantId(restaurantMapper.convertToEntity(restaurantAddressDTO.getRestaurantDTO()));
+        restaurantAddress.setAddressId(convertAddressToEntity(restaurantAddressDTO.getAddressDTO()));
+        return restaurantAddress;
+    }
+
+
 }
