@@ -23,7 +23,8 @@ public class CartMapper implements Converter<Cart, CartDTO> {
                         cartItem.getDateTime()
                 )).toList(),
                 cart.getTotalPrice(),
-                cart.getUser()
+                cart.getUser(),
+                cart.getCreatedDate()
         );
     }
 
@@ -33,6 +34,7 @@ public class CartMapper implements Converter<Cart, CartDTO> {
         res.setCartItems(cartItemResDTOList);
         res.setTotalPrice(cart.getTotalPrice());
         res.setUserId(cart.getUser());
+        res.setCreatedDate(cart.getCreatedDate());
         return res;
     }
 }

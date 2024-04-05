@@ -1,6 +1,7 @@
 package com.management.csit314_project.Model.User;
 
 
+import com.management.csit314_project.Model.Type.Roles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Role {
     private String name;
     @Column(name = "description")
     private String description;
-    @OneToMany(mappedBy = "role")
-    private Set<UserRoles> roleUsers;
+    @Column(name = "roles")
+    private Roles roles;
+
 }

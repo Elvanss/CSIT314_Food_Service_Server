@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 
 @Getter
@@ -19,4 +20,5 @@ public class CartDTO {
     private List<CartItemResDTO> cartItems = new ArrayList<>();
     private Long totalPrice;
     private User userId;
+    private Date createdDate;
 }

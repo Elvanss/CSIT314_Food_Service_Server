@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "`order`")
 public class Order {
 
     @Id
@@ -43,9 +43,6 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "User-id", referencedColumnName = "id")
     private User userId;
-
-
-
 
 
 }

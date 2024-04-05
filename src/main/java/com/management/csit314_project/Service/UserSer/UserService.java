@@ -7,6 +7,7 @@ import com.management.csit314_project.Mapper.UserMapper.UserMapper;
 import com.management.csit314_project.Model.Cart;
 import com.management.csit314_project.Model.CartItem;
 import com.management.csit314_project.Model.Type.MembershipType;
+import com.management.csit314_project.Model.Type.Roles;
 import com.management.csit314_project.Model.User.Category.MembershipUser;
 import com.management.csit314_project.Model.User.Role;
 import com.management.csit314_project.Model.User.User;
@@ -34,11 +35,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,24 +104,25 @@ public class UserService {
 
 
         // Assign the "USER" role
-        Role roleEntity = roleRepository.findByName(com.management.csit314_project.Model.Type.Roles.USER.name()).orElseThrow();
+        Role roleEntity = roleRepository.findByName(Roles.USER.name())
+                .orElseThrow();
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Role not found!"));
-//        user.setRoleUsers(Collections.singleton(userRole.getName()));
-        //user.setRoles(Set.of(String.valueOf(roleEntity)));
-//        UserRoles roleUser = new UserRoles();
-//        roleUser.setUserId(savedUser.getId());
-//        roleUser.setRoleId(roleEntity.getId());
-//        roleUserRepository.save(roleUser);
+                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                                    "Role not found!"));
+//        user.setRoleUsers(Set.of(new UserRoles(user.getId(),savedUser, userRole)));
+//        user.setRoleUsers(Set.of(String.valueOf(roleEntity)));
+        UserRoles roleUser = new UserRoles();
+        roleUser.setUser(savedUser);
+        roleUser.setRole(roleEntity);
+        roleRepository.save(roleUser);
 //
-//        Cart cart = new Cart();
-//        cart.setUserId(savedUser.getId());
-//        LocalDate localDate = LocalDate.now();
-//        cart.setCreatedDate(Date.valueOf(localDate));
-//        cartRepository.save(cart);
-//        // Save the user to the database
-//        return userMapper.userToUserDto(savedUser);
-        return null;
+        Cart cart = new Cart();
+        cart.setUser(savedUser);
+        LocalDate localDate = LocalDate.now();
+        cart.setCreatedDate(Date.valueOf(localDate));
+        cartRepository.save(cart);
+        // Save the user to the database
+        return userMapper.convert(savedUser);
     }
 
     @Transactional
@@ -255,12 +260,12 @@ public class UserService {
     }
 
     private String getRoleById(Integer roleId) {
-        Optional<Role> role = roleRepository.findById(roleId);
+        Optional<UserRoles> role = roleRepository.findById(roleId);
         if (role.isEmpty()) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Role with id " + roleId + " does not exist");
         }
 
-        return role.get().getName();
+        return role.get().getRole().getRoles().name();
     }
 
     // Sign up for membership
