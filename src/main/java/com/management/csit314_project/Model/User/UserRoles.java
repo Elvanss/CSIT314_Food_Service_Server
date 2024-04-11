@@ -1,5 +1,6 @@
 package com.management.csit314_project.Model.User;
 
+import com.management.csit314_project.Model.Type.Roles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
