@@ -4,6 +4,7 @@ import com.management.csit314_project.DTO.AddressDTO;
 import com.management.csit314_project.DTO.UserDTO.CategoryDTO.MembershipUserDTO;
 import com.management.csit314_project.Model.User.Category.MembershipUser;
 import com.management.csit314_project.Model.User.Role;
+import com.management.csit314_project.Model.User.UserRoles;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +32,7 @@ public class UserDTO implements Serializable {
     private Long phoneNumber;
     private boolean isMember;
     private MembershipUserDTO membershipUserDTO;
-    private Set<Role> roles;
+    private Set<UserRoles> roles;
 
 
 }

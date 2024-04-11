@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
+
+    // Find all cart items by cart id
     @Query("SELECT c FROM CartItem c WHERE c.item.id = ?1")
     List<CartItem> findAllByCartId(Integer cartId);
 

@@ -41,19 +41,18 @@ public class CustomUserDetails implements UserDetails {
 
     private List<String> getRoleListByUserId(Integer userId) {
         List<UserRoles> listRoleUser = roleUserRepository.findByUserId(userId);
-        List<String> list = listRoleUser
+        return listRoleUser
                 .stream()
                 .map(roleUser -> getRoleById(roleUser.getId().longValue()))
                 .collect(Collectors.toList());
-        return list;
     }
     private String getRoleById(Long roleId) {
-        Optional<Role> role = roleRepository.findById(roleId.intValue());
+        Optional<UserRoles> role = roleRepository.findById(roleId.intValue());
         if (role.isEmpty()) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Role with id " + roleId + " does not exist");
         }
 
-        return role.get().getName();
+        return role.get().getRole().getName();
     }
 
     @Override

@@ -5,11 +5,14 @@ import com.management.csit314_project.DTO.LoginResponseDTO;
 import com.management.csit314_project.DTO.UserDTO.UserDTO;
 import com.management.csit314_project.Mapper.UserMapper.UserMapper;
 import com.management.csit314_project.Model.Cart;
+import com.management.csit314_project.Model.CartItem;
 import com.management.csit314_project.Model.Type.MembershipType;
+import com.management.csit314_project.Model.Type.Roles;
 import com.management.csit314_project.Model.User.Category.MembershipUser;
 import com.management.csit314_project.Model.User.Role;
 import com.management.csit314_project.Model.User.User;
 import com.management.csit314_project.Model.User.UserRoles;
+import com.management.csit314_project.Repository.CartItemRepository;
 import com.management.csit314_project.Repository.CartRepository;
 import com.management.csit314_project.Repository.RoleRepository;
 import com.management.csit314_project.Repository.UserRepo.MembershipRepository;
@@ -32,11 +35,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +55,7 @@ public class UserService {
     private final UserRoleRepository userRolesRepository;
     private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartItemRepository cartItemRepository;
     private final RoleRepository roleRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -58,6 +65,7 @@ public class UserService {
                        UserMapper userMapper,
                        UserRoleRepository userRolesRepository,
                        CartRepository cartRepository,
+                       CartItemRepository cartItemRepository,
                        PasswordEncoder passwordEncoder,
                        RoleRepository roleRepository,
                        JwtTokenProvider jwtTokenProvider,
@@ -68,6 +76,7 @@ public class UserService {
         this.userMapper = userMapper;
         this.userRolesRepository = userRolesRepository;
         this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -95,24 +104,25 @@ public class UserService {
 
 
         // Assign the "USER" role
-        Role roleEntity = roleRepository.findByName(com.management.csit314_project.Model.Type.Roles.USER.name()).orElseThrow();
+        Role roleEntity = roleRepository.findByName(Roles.USER.name())
+                .orElseThrow();
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Role not found!"));
-//        user.setRoleUsers(Collections.singleton(userRole.getName()));
-        //user.setRoles(Set.of(String.valueOf(roleEntity)));
-//        UserRoles roleUser = new UserRoles();
-//        roleUser.setUserId(savedUser.getId());
-//        roleUser.setRoleId(roleEntity.getId());
-//        roleUserRepository.save(roleUser);
+                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                                    "Role not found!"));
+//        user.setRoleUsers(Set.of(new UserRoles(user.getId(),savedUser, userRole)));
+//        user.setRoleUsers(Set.of(String.valueOf(roleEntity)));
+        UserRoles roleUser = new UserRoles();
+        roleUser.setUser(savedUser);
+        roleUser.setRole(roleEntity);
+        roleRepository.save(roleUser);
 //
-//        Cart cart = new Cart();
-//        cart.setUserId(savedUser.getId());
-//        LocalDate localDate = LocalDate.now();
-//        cart.setCreatedDate(Date.valueOf(localDate));
-//        cartRepository.save(cart);
-//        // Save the user to the database
-//        return userMapper.userToUserDto(savedUser);
-        return null;
+        Cart cart = new Cart();
+        cart.setUser(savedUser);
+        LocalDate localDate = LocalDate.now();
+        cart.setCreatedDate(Date.valueOf(localDate));
+        cartRepository.save(cart);
+        // Save the user to the database
+        return userMapper.convert(savedUser);
     }
 
     @Transactional
@@ -135,8 +145,8 @@ public class UserService {
             // Get user id
             Integer userId = userDetails.getUser().getId();
             //get Cart Id by userId
-//            Integer cartId = getCartByUserId(userId).getId();
-//            int quantity = getQuantityByUserId(userId);
+            Integer cartId = getCartByUserId(userId).getId();
+            int quantity = getQuantityByUserId(userId);
 
             //get role by user id
             List<String> roles = getRoleListByUserId(userDetails.getUser().getId());
@@ -148,9 +158,9 @@ public class UserService {
                     .roles(userDetails.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
                             .collect(Collectors.toList()))
-//                    .cartId(cartId)
+                    .cartId(cartId)
                     .userId(userId) // user id is the same as the cart id
-//                    .quantity(quantity)
+                    .quantity(quantity)
                     .roles(roles)
                     .build();
         } catch (Exception e) {
@@ -160,16 +170,23 @@ public class UserService {
         return null;
     }
 
+    // Get the quantity of items in the cart by user id
+    private int getQuantityByUserId(Integer userId) {
+        Cart cart = getCartByUserId(userId);
+        List<CartItem> cartItems = cartItemRepository.findAllByCartId(cart.getId());
+        return cartItems.size();
+    }
+
     // Get the cart by user id (user id is the same as the cart id)
-    private Cart getCartByUserId(Long userId) {
+    private Cart getCartByUserId(Integer userId) {
         Optional<Cart> foundCart = cartRepository.findByUserId(userId);
         if (foundCart.isEmpty()) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Cart not found for user with id: " + userId);
         }
-        return null;
+        return foundCart.get();
     }
 
-    // User Account
+    // Get the User Account
     public UserDTO getUserInfo(String username) {
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
@@ -180,6 +197,7 @@ public class UserService {
         }
     }
 
+    // Update the user profile
     public UserDTO updateUserProfile(String username, UserDTO updateFields) {
         User existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User is not found!"));
@@ -217,6 +235,14 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    // Get user by id
+    public UserDTO getUserById(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "User with id " + userId + " does not exist"));
+        return userMapper.convert(user);
+    }
+
+    // Add a new user
     public UserDTO addUser(UserDTO userDTO) {
         User user = userMapper.convertToEntity(userDTO);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -234,14 +260,15 @@ public class UserService {
     }
 
     private String getRoleById(Integer roleId) {
-        Optional<Role> role = roleRepository.findById(roleId);
+        Optional<UserRoles> role = roleRepository.findById(roleId);
         if (role.isEmpty()) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Role with id " + roleId + " does not exist");
         }
 
-        return role.get().getName();
+        return role.get().getRole().getRoles().name();
     }
 
+    // Sign up for membership
     @Transactional
     public void signUpForMembership(int userId, MembershipType membershipType) {
         User user = userRepository.findById(userId)
@@ -251,6 +278,23 @@ public class UserService {
         membership.setMemId(userId);
         membership.setMembershipType(membershipType);
         Timestamp expiryDateTime = calculateExpiryDate(membershipType);
+        if (membershipRepository.existsByMemId(userId)) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "User already has a membership");
+        }
+
+        /* Check if the membership type is valid
+            * set the expiry date by adding 1 month or 1 year to the current date
+            * return an error if the membership type is invalid
+            * return an error if the user already has a membership
+            * save the membership to the database
+        * */
+        if (membershipType == MembershipType.MONTHLY) {
+            membership.setMembershipType(MembershipType.MONTHLY);
+        } else if (membershipType == MembershipType.ANNUALLY) {
+            membership.setMembershipType(MembershipType.ANNUALLY);
+        } else {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Invalid membership type: " + membershipType);
+        }
         membership.setExpiryDateTime(expiryDateTime);
 
         user.setMembership(membership);
